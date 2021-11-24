@@ -1,0 +1,48 @@
+name: develop-env
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8
+  - pip
+
+  # data science kit
+  - numpy
+  - matplotlib
+  - scikit-learn
+  - scipy
+  - pandas
+  - seaborn
+  - pyarrow
+
+  # jupyter lab utils
+  - ipykernel
+  - ipywidgets
+  - nb_black # black formatter
+  - wurlitzer # C level output
+
+  # python utils
+  - tqdm # progress bar
+  - black # formatter
+  - isort # import sorter
+  - flake8 # linter
+  - pre_commit # git pre-commit hooks
+  - pipreqs # generate requirements.txt
+  - click # command line support
+
+  # pytorch
+  - pytorch
+  - torchvision
+  - torchaudio
+  # - cudatoolkit=11.3
+  - cpuonly
+
+  # pytorch utils
+  - tensorboard
+  - pytorch-lightning
+  - hydra-core
+
+  - pip:
+    - PyYAML
+    - pytorch-lightning-bolts
