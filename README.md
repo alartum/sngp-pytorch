@@ -59,5 +59,5 @@ python -m pip install -e .
 
 ### Deinstallation
 ```bash
-pip uninstall sngp-pytorch
+python -m pip uninstall sngp-pytorch
 ```

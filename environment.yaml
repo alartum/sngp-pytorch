@@ -30,6 +30,7 @@ dependencies:
   - pre_commit # git pre-commit hooks
   - pipreqs # generate requirements.txt
   - click # command line support
+  - pytest # testing
 
   # pytorch
   - pytorch
