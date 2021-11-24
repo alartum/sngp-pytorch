@@ -6,16 +6,16 @@ Spectral-normalized Neural Gaussian Process (SNGP) implementation in PyTorch
 **Important:** recommended having [`Jupyter Lab`](https://jupyterlab.readthedocs.io/en/stable/getting_started/installation.html) installed in the `base` conda environment. For the best experience, you may also install [`nb_conda_kernels`](https://github.com/Anaconda-Platform/nb_conda_kernels) and [`ipywidgets`](https://ipywidgets.readthedocs.io/en/latest/user_install.html#installing-in-jupyterlab-3-0) in the `base` conda environment. Also, using [`mamba`](https://mamba.readthedocs.io/en/latest/) is recommended.
 
 0. Basic **conda** setup:
-   * download [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
+   1. download [Miniconda](https://docs.conda.io/en/latest/miniconda.html)
      ```bash
      $ wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
      ```
-   * install it
+   2. install it
      ```bash
      $ bash Miniconda3-latest-Linux-x86_64.sh
      ```
-   * reload your terminal, so that `base` environment is activated
-   * install essential packages
+   3. reload your terminal, so that `base` environment is activated
+   4. install essential packages
      ```bash
      $ conda install -c conda-forge "mamba>0.18"
      $ mamba install -c conda-forge jupyterlab jupyterlab_widgets nodejs nb_conda_kernels
