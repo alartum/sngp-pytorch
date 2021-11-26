@@ -23,6 +23,7 @@ dependencies:
   - wurlitzer # C level output
 
   # python utils
+  - pbr # packaging
   - tqdm # progress bar
   - black # formatter
   - isort # import sorter
@@ -47,3 +48,4 @@ dependencies:
   - pip:
     - PyYAML
     - pytorch-lightning-bolts
+    - torch-summary
