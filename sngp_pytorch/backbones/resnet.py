@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.nn.utils import spectral_norm
-from torchsummary import summary
+from torchinfo import summary
 
 
 def SN_wrapper(layer, use_sn):

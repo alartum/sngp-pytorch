@@ -1,0 +1,29 @@
+defaults:
+  - trainer: cpu
+  - _self_  # https://hydra.cc/docs/upgrades/1.0_to_1.1/default_composition_order/
+
+make_data:
+  call: make_moons
+  n_dims: 2
+  n_classes: 2
+  n_samples: 500
+  noise: 0.1
+  random_state: 42
+
+model:
+  n_inducing: 512
+  momentum: 0.9
+  ridge_penalty: 1.0e-6
+  activation: cos
+  verbose: False
+  l2_reg: 1.0e-4
+  learning_rate: 1.0e-3
+  optimizer: adam
+
+trainer:
+  max_epochs: 200
+  check_val_every_n_epoch: 5
+
+num_workers: 4
+batch_size: 64
+seed: 42

@@ -1,7 +1,6 @@
-max_epochs: 500
+max_epochs: 50
 check_val_every_n_epoch: 1
-gpus: 1
-n_workers: 4
+gpus: 0
 auto_scale_batch_size: True
-is_deterministic: False
+deterministic: True
 fast_dev_run: False

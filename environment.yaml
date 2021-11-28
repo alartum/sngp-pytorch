@@ -44,8 +44,11 @@ dependencies:
   - tensorboard
   - pytorch-lightning
   - hydra-core
+  - torchinfo
+
+  # logging
+  - wandb
 
   - pip:
     - PyYAML
-    - pytorch-lightning-bolts
-    - torch-summary
+    - lightning-bolts
