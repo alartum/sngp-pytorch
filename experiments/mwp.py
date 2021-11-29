@@ -1,7 +1,6 @@
 import hydra
 import pytorch_lightning as pl
 import sklearn.datasets
-import torch.nn as nn
 from omegaconf import DictConfig, OmegaConf
 from pl_bolts.datamodules import SklearnDataModule
 from pytorch_lightning.callbacks import (
@@ -11,7 +10,7 @@ from pytorch_lightning.callbacks import (
 )
 from pytorch_lightning.loggers import WandbLogger
 
-from sngp_pytorch import LitRandomFeatureGaussianProcess
+from sngp_pytorch.models import LitBatchNorm1dRFGP
 
 
 @hydra.main(config_path="config", config_name="mwp.yaml")
@@ -46,10 +45,9 @@ def main(cfg: DictConfig) -> None:
         mode="min",
     )
 
-    model = LitRandomFeatureGaussianProcess(
-        backbone_dim=n_dims,
+    model = LitBatchNorm1dRFGP(
+        in_features=n_dims,
         n_classes=n_classes,
-        backbone=nn.BatchNorm1d(n_dims),
         **cfg.model,
     )
 

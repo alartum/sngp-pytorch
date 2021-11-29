@@ -23,9 +23,11 @@ class LitRandomFeatureGaussianProcess(pl.LightningModule):
         learning_rate=1e-3,
         optimizer="adam",
         log_covariance=False,
+        save_hyperparameters=True,
     ):
         super().__init__()
-        self.save_hyperparameters(ignore=["backbone"])
+        if save_hyperparameters:
+            self.save_hyperparameters(ignore=["backbone"])
 
         supported = ["cos"]
         if activation not in supported:

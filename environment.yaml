@@ -37,8 +37,8 @@ dependencies:
   - pytorch
   - torchvision
   - torchaudio
-  # - cudatoolkit=11.3
-  - cpuonly
+  - cudatoolkit=11.3
+  # - cpuonly
 
   # pytorch utils
   - tensorboard
