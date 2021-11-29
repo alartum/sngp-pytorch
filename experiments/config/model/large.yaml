@@ -1,0 +1,8 @@
+n_inducing: 1024
+momentum: 0.9
+ridge_penalty: 1.0e-6
+activation: cos
+verbose: False
+l2_reg: 1.0e-4
+learning_rate: 1.0e-3
+optimizer: adam
