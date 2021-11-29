@@ -1,5 +1,6 @@
-from .lit_random_feature import LitRandomFeatureGaussianProcess
 import torch.nn as nn
+
+from .lit_random_feature import LitRandomFeatureGaussianProcess
 
 
 class LitBatchNorm1dRFGP(LitRandomFeatureGaussianProcess):

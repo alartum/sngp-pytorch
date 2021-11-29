@@ -1,0 +1,9 @@
+call: make_moons
+n_dims: 2
+n_classes: 2
+num_workers: 4
+batch_size: 64
+
+n_samples: 500
+noise: 0.1
+random_state: 42

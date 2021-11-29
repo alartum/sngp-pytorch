@@ -10,6 +10,7 @@ from pytorch_lightning.callbacks import (
 )
 from pytorch_lightning.loggers import WandbLogger
 
+from sngp_pytorch.datamodules import EmbeddingsDataModule  # noqa F401
 from sngp_pytorch.models import LitBatchNorm1dRFGP
 
 
@@ -19,21 +20,32 @@ def main(cfg: DictConfig) -> None:
 
     pl.seed_everything(cfg.seed, workers=True)
 
-    make_data = dict(cfg.make_data)
-    data_fn_name = make_data.pop("call")
-    n_dims = make_data.pop("n_dims")
-    n_classes = make_data.pop("n_classes")
-    data_fn = getattr(sklearn.datasets, data_fn_name)
+    data = dict(cfg.data)
+    data_fn_name = data.pop("call")
+    n_dims = data.pop("n_dims")
+    n_classes = data.pop("n_classes")
+    num_workers = data.pop("num_workers")
+    batch_size = data.pop("batch_size")
 
-    X, y = data_fn(**make_data)
-    datamodule = SklearnDataModule(
-        X,
-        y,
-        random_state=cfg.seed,
-        batch_size=cfg.batch_size,
-        test_split=0.0,
-        num_workers=cfg.num_workers,
-    )
+    try:
+        data_fn = getattr(sklearn.datasets, data_fn_name)
+
+        X, y = data_fn(**data)
+
+        datamodule = SklearnDataModule(
+            X,
+            y,
+            random_state=cfg.seed,
+            batch_size=batch_size,
+            test_split=0.0,
+            num_workers=num_workers,
+        )
+    except AttributeError:
+        data_fn = globals()[data_fn_name]
+
+        datamodule = data_fn(
+            **data, batch_size=batch_size, num_workers=num_workers
+        )
 
     filename = f"{data_fn_name}" "-{epoch:02d}-{val_loss:.2f}"
 
