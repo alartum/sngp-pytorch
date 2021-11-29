@@ -1,5 +1,6 @@
 # sngp-pytorch
-Spectral-normalized Neural Gaussian Process (SNGP) implementation in PyTorch
+Spectral-normalized Neural Gaussian Process (SNGP) implementation in PyTorch ([DEMO](experiments/mwp.ipynb)).
+
 
 ## Environment
 
