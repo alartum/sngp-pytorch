@@ -1,8 +1,8 @@
 call: EmbeddingsDataModule
 n_dims: 2048
 n_classes: 1000
-batch_size: 16384
-num_workers: 6
+batch_size: 4096
+num_workers: 4
 
 train:
   - /gpfs/gpfs0/k.fedyanin/space/imagenet_embeddings/train_embeddings.npy
