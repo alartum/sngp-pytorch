@@ -75,6 +75,8 @@ def main(cfg: DictConfig) -> None:
         logger=wandb_logger,
         **cfg.trainer,
     )
+    # Optional batch size tuning
+    # trainer.tune(model, datamodule=datamodule)
 
     trainer.fit(model, datamodule=datamodule)
 
