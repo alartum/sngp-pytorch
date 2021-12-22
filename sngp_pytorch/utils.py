@@ -38,3 +38,8 @@ def mean_field_logits(
         logits_scale = logits_scale[:, None]
 
     return logits / logits_scale
+
+
+def dempster_shafer_uncertainty(logits: torch.Tensor) -> torch.Tensor:
+    K = logits.shape[-1]
+    return K / (K + logits.exp().sum(dim=-1))
