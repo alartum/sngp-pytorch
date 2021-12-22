@@ -1,0 +1,9 @@
+call: CIFAR100CustomDataModule
+n_classes: 100
+batch_size: 256
+num_workers: 4
+
+val_size: 0.8
+pin_memory: True
+drop_last: False
+shuffle: True

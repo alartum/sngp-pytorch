@@ -13,6 +13,8 @@ exclude = '''
   | buck-out
   | build
   | dist
+  | image_uncertainty
+  | spectral_normalized_models
 )/
 '''
 

@@ -2,7 +2,7 @@ import pytorch_lightning as pl
 import torch
 from torch import nn
 from torch.nn import CrossEntropyLoss, MSELoss
-from torch.optim.lr_scheduler import ReduceLROnPlateau
+from torch.optim.lr_scheduler import MultiStepLR
 
 from ..utils import mean_field_logits
 from .random_feature import Cos, RandomFeatureGaussianProcess
@@ -249,12 +249,19 @@ class LitRandomFeatureGaussianProcess(pl.LightningModule):
                 weight_decay=5e-4,
             )
 
-        lr_scheduler = ReduceLROnPlateau(
+        # lr_scheduler = ReduceLROnPlateau(
+        #     optimizer,
+        #     patience=5,
+        #     factor=0.1,
+        #     threshold=1e-4,
+        #     threshold_mode="rel",
+        #     verbose=True,
+        # )
+
+        lr_scheduler = MultiStepLR(
             optimizer,
-            patience=5,
-            factor=0.1,
-            threshold=1e-4,
-            threshold_mode="rel",
+            milestones=[60, 120, 160],
+            gamma=0.2,
             verbose=True,
         )
         scheduler = {
