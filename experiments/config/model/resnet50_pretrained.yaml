@@ -2,6 +2,7 @@ model_path: models_cifar_spectral/lsun_42/model_0.pth
 model_name: resnet50_spectral
 
 freeze: True
+reset: False
 
 n_inducing: 1024
 momentum: 0.9

@@ -3,6 +3,7 @@ from typing import List
 import torch.nn as nn
 
 from image_uncertainty.cifar.cifar_evaluate import load_model
+from image_uncertainty.models import get_model
 
 from ..backbones import resnet
 from .lit_random_feature import LitRandomFeatureGaussianProcess
@@ -51,8 +52,13 @@ class LitResnetRFGP(LitRandomFeatureGaussianProcess):
 
 
 class LitPretrainedRFGP(LitRandomFeatureGaussianProcess):
-    def __init__(self, model_name, model_path, **kwargs):
-        backbone = load_model(model_name, model_path, False)
+    def __init__(self, model_name, model_path, reset=False, **kwargs):
+        if reset:
+            backbone = get_model(model_name, False)
+        else:
+            backbone = load_model(model_name, model_path, False)
+            backbone.train()
+
         backbone_dim, n_classes = (
             backbone.linear.in_features,
             backbone.linear.out_features,

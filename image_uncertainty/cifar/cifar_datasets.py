@@ -204,6 +204,7 @@ class CIFAR100_WITH_OOD(torchvision.datasets.CIFAR100):
 
 
 def get_training_dataloader(
+    root,
     mean=(0.4914, 0.4822, 0.4465),
     std=(0.2023, 0.1994, 0.2010),
     batch_size=16,
@@ -227,12 +228,8 @@ def get_training_dataloader(
         ]
     )
 
-    # cifar100 = CIFAR100_WITH_OOD(
-    #     ood_classes(ood_categories), ood=False, root='./data', train=True,
-    #     download=True, transform=transform_train
-    # )
     cifar100 = torchvision.datasets.CIFAR100(
-        root="./data", train=True, download=True, transform=transform_train
+        root=root, train=True, download=True, transform=transform_train
     )
 
     torch.manual_seed(seed)
