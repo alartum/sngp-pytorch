@@ -3,7 +3,7 @@
 #SBATCH --gres=gpu:1
 #SBATCH --nodes=2
 #SBATCH --ntasks-per-node=1
-#SBATCH --mem=10G
+#SBATCH --mem=5G
 #SBATCH --time=04:00:00
 source ~/.zshrc
 conda activate pytorch-env
