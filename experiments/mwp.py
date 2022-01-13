@@ -21,7 +21,7 @@ def main(cfg: DictConfig) -> None:
     pl.seed_everything(cfg.seed, workers=True)
 
     data = dict(cfg.data)
-    data_fn_name = data.pop("call")
+    data_fn_name = data.pop("name")
     n_dims = data.pop("n_dims")
     n_classes = data.pop("n_classes")
     num_workers = data.pop("num_workers")

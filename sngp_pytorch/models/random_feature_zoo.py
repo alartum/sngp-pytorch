@@ -1,11 +1,14 @@
 from typing import List
 
 import torch.nn as nn
+import torchvision  # noqa F401
 
+import sngp_pytorch  # noqa F401
 from image_uncertainty.cifar.cifar_evaluate import load_model
 from image_uncertainty.models import get_model
 
 from ..backbones import resnet
+from ..utils import apply_spectral_norm, get_last_fc
 from .lit_random_feature import LitRandomFeatureGaussianProcess
 
 
@@ -15,6 +18,32 @@ class LitBatchNorm1dRFGP(LitRandomFeatureGaussianProcess):
         self.save_hyperparameters()
         super().__init__(
             backbone_dim=in_features,
+            n_classes=n_classes,
+            backbone=backbone,
+            save_hyperparameters=False,
+            **kwargs
+        )
+
+
+class LitBackboneRFGP(LitRandomFeatureGaussianProcess):
+    def __init__(
+        self,
+        backbone_init: str = "sngp_pytorch.backbones.resnet.resnet50()",
+        spectral_normalization: bool = True,
+        norm_multiplier=6.0,
+        n_classes: int = 10,
+        **kwargs
+    ):
+        backbone = eval(backbone_init)
+        if spectral_normalization:
+            apply_spectral_norm(backbone, norm_multiplier=norm_multiplier)
+        fc_name, parent = get_last_fc(backbone)
+        backbone_dim = getattr(parent, fc_name).in_features
+        setattr(parent, fc_name, nn.Identity())
+
+        self.save_hyperparameters()
+        super().__init__(
+            backbone_dim=backbone_dim,
             n_classes=n_classes,
             backbone=backbone,
             save_hyperparameters=False,

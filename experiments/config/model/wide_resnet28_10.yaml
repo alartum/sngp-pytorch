@@ -1,6 +1,6 @@
 name: LitBackboneRFGP
 
-backbone_init: sngp_pytorch.backbones.resnet.resnet50()
+backbone_init: sngp_pytorch.backbones.Wide_ResNet(28, 10, 0.0, 100)
 spectral_normalization: True
 norm_multiplier: 6.0
 

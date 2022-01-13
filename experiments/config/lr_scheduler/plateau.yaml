@@ -1,0 +1,12 @@
+name: ReduceLROnPlateau
+
+config:
+  interval: epoch
+  frequency: 1
+  monitor: train/loss
+
+patience: 5
+factor: 0.1
+threshold: 1e-4
+threshold_mode: rel
+verbose: True

@@ -1,0 +1,4 @@
+name: Adam
+
+lr: 1.0e-3
+weight_decay: 1e-4

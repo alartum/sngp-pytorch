@@ -1,17 +1,10 @@
-call: EmbeddingsDataModule
-n_dims: 2048
-n_classes: 1000
-batch_size: 4096
-num_workers: 4
+name: ImagenetDataModule
+data_dir: /gpfs/data/gpfs0/a.artemenkov/space/datasets/ImageNet/ILSVRC2012
 
-train:
-  - /gpfs/gpfs0/k.fedyanin/space/imagenet_embeddings/train_embeddings.npy
-  - /gpfs/gpfs0/k.fedyanin/space/imagenet_embeddings/train_targets.npy
-val:
-  - /gpfs/gpfs0/k.fedyanin/space/imagenet_embeddings/val_embeddings.npy
-  - /gpfs/gpfs0/k.fedyanin/space/imagenet_embeddings/val_targets.npy
+n_classes: 1000
+batch_size: 128
+num_workers: 6
 
 pin_memory: True
 drop_last: False
 shuffle: True
-mmap_mode: c

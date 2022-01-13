@@ -1,8 +1,8 @@
 import pytorch_lightning as pl
 import torch
+import torch.optim
 from torch import nn
 from torch.nn import CrossEntropyLoss, MSELoss
-from torch.optim.lr_scheduler import MultiStepLR
 
 from ..utils import mean_field_logits
 from .random_feature import Cos, RandomFeatureGaussianProcess
@@ -20,8 +20,12 @@ class LitRandomFeatureGaussianProcess(pl.LightningModule):
         activation: str = "cos",
         verbose: bool = False,
         l2_reg=1e-4,
-        learning_rate=1e-3,
-        optimizer="adam",
+        optimizer_cfg=dict(
+            name="SGD", lr=1e-4, momentum=0.9, weight_decay=1e-4
+        ),
+        lr_scheduler_cfg=dict(
+            name="StepLR", warmup=500, step_size=30, gamma=0.1, verbose=True
+        ),
         log_covariance=False,
         save_hyperparameters=True,
     ):
@@ -49,8 +53,13 @@ class LitRandomFeatureGaussianProcess(pl.LightningModule):
             verbose=verbose,
         )
 
-        self.optimizer = optimizer
-        self.learning_rate = learning_rate
+        self.optimizer_name = optimizer_cfg.pop("name")
+        self.optimizer_kwargs = optimizer_cfg
+        self.lr_scheduler_name = lr_scheduler_cfg.pop("name")
+        # 500 warmup steps by default
+        self.warmup = lr_scheduler_cfg.pop("warmup", 500)
+        self.lr_scheduler_config = lr_scheduler_cfg.pop("config", {})
+        self.lr_scheduler_kwargs = lr_scheduler_cfg
         self.l2_reg = l2_reg
         self.log_covariance = log_covariance
 
@@ -93,34 +102,29 @@ class LitRandomFeatureGaussianProcess(pl.LightningModule):
         loss = class_loss + l2_loss
 
         with torch.no_grad():
-            y_pr = logits.argmax(dim=-1)
-            acc = (y_pr == y).to(torch.float32).mean()
+            y_pr = logits.argsort(descending=True, dim=-1)
+            acc1 = (
+                (y_pr[:, :1] == y[:, None])
+                .to(torch.float32)
+                .sum(dim=-1)
+                .mean()
+            )
+            acc5 = (
+                (y_pr[:, :5] == y[:, None])
+                .to(torch.float32)
+                .sum(dim=-1)
+                .mean()
+            )
+
+        self.log("train/loss", loss, prog_bar=True)
 
         self.log(
-            "train/loss",
-            loss,
-            on_step=True,
-            on_epoch=True,
+            "train/acc@1",
+            acc1,
             prog_bar=True,
-            logger=True,
         )
 
-        self.log(
-            "train/acc",
-            acc,
-            on_step=True,
-            on_epoch=True,
-            prog_bar=True,
-            logger=True,
-        )
-
-        stats = {
-            "train/total": loss,
-            "train/class": class_loss,
-            "train/prior": l2_loss,
-            "train/acc": acc,
-        }
-        self.logger.log_metrics(stats)
+        self.log("train/acc@5", acc5, prog_bar=True)
 
         return loss
 
@@ -150,35 +154,29 @@ class LitRandomFeatureGaussianProcess(pl.LightningModule):
         logits = mean_field_logits(logits, variances)
         class_expect_loss = self.criterion(logits, y)
 
-        y_pr = logits.argmax(dim=-1)
-        acc = (y_pr == y).to(torch.float32).mean()
+        y_pr = logits.argsort(descending=True, dim=-1)
+        acc1 = (y_pr[:, :1] == y[:, None]).to(torch.float32).sum(dim=-1).mean()
+        acc5 = (y_pr[:, :5] == y[:, None]).to(torch.float32).sum(dim=-1).mean()
 
         self.log(
             "val/loss",
             loss,
-            on_step=True,
-            on_epoch=True,
             prog_bar=True,
-            logger=True,
         )
 
         self.log(
-            "val/acc",
-            acc,
-            on_step=True,
-            on_epoch=True,
+            "val/acc@1",
+            acc1,
             prog_bar=True,
-            logger=True,
         )
 
-        stats = {
-            "val/total": loss,
-            "val/class": class_loss,
-            "val/prior": l2_loss,
-            "val/class_expect": class_expect_loss,
-            "val/acc": acc,
-        }
-        self.logger.log_metrics(stats)
+        self.log(
+            "val/acc@5",
+            acc5,
+            prog_bar=True,
+        )
+
+        self.log("val/mean_field_loss", class_expect_loss)
 
         return loss
 
@@ -198,75 +196,68 @@ class LitRandomFeatureGaussianProcess(pl.LightningModule):
         logits = mean_field_logits(logits, variances)
         class_expect_loss = self.criterion(logits, y)
 
-        y_pr = logits.argmax(dim=-1)
-        acc = (y_pr == y).to(torch.float32).mean()
+        y_pr = logits.argsort(descending=True, dim=-1)
+        acc1 = (y_pr[:, :1] == y[:, None]).to(torch.float32).sum(dim=-1).mean()
+        acc5 = (y_pr[:, :5] == y[:, None]).to(torch.float32).sum(dim=-1).mean()
 
         self.log(
             "test/loss",
             loss,
-            on_step=True,
-            on_epoch=True,
             prog_bar=True,
-            logger=True,
         )
 
         self.log(
-            "test/acc",
-            acc,
-            on_step=True,
-            on_epoch=True,
+            "test/acc@1",
+            acc1,
             prog_bar=True,
-            logger=True,
         )
 
-        stats = {
-            "test/total": loss,
-            "test/class": class_loss,
-            "test/prior": l2_loss,
-            "test/class_expect": class_expect_loss,
-            "test/acc": acc,
-        }
-        self.logger.log_metrics(stats)
+        self.log(
+            "test/acc@5",
+            acc5,
+            prog_bar=True,
+        )
+
+        self.log("test/mean_field_loss", class_expect_loss)
 
         return loss
 
     def configure_optimizers(self):
-        supported = ["adam", "sgd"]
-        if self.optimizer not in supported:
-            raise ValueError(
-                f"Expected `self.optimizer` one of {supported}, "
-                f"but got {self.optimizer} instead"
-            )
-        elif self.optimizer == "adam":
-            optimizer = torch.optim.Adam(
-                self.model.parameters(), lr=self.learning_rate
-            )
-        elif self.optimizer == "sgd":
-            optimizer = torch.optim.SGD(
-                self.model.parameters(),
-                lr=self.learning_rate,
-                momentum=0.9,
-                weight_decay=5e-4,
-            )
-
-        # lr_scheduler = ReduceLROnPlateau(
-        #     optimizer,
-        #     patience=5,
-        #     factor=0.1,
-        #     threshold=1e-4,
-        #     threshold_mode="rel",
-        #     verbose=True,
-        # )
-
-        lr_scheduler = MultiStepLR(
-            optimizer,
-            milestones=[60, 120, 160],
-            gamma=0.2,
-            verbose=True,
+        optimizer = getattr(torch.optim, self.optimizer_name)(
+            self.model.parameters(),
+            **self.optimizer_kwargs,
         )
-        scheduler = {
-            "scheduler": lr_scheduler,
-            "monitor": "train/loss_epoch",
-        }
+
+        if self.warmup > 0:
+            for pg in optimizer.param_groups:
+                pg["lr"] = self.optimizer_kwargs["lr"] / self.warmup
+
+        lr_scheduler = getattr(
+            torch.optim.lr_scheduler, self.lr_scheduler_name
+        )(optimizer, **self.lr_scheduler_kwargs)
+
+        scheduler = {"scheduler": lr_scheduler, **self.lr_scheduler_config}
 
         return [optimizer], [scheduler]
+
+    # https://pytorch-lightning.readthedocs.io/en/stable/common/optimizers.html#step-optimizers-at-arbitrary-intervals
+    def optimizer_step(
+        self,
+        epoch,
+        batch_idx,
+        optimizer,
+        optimizer_idx,
+        optimizer_closure,
+        on_tpu=False,
+        using_native_amp=False,
+        using_lbfgs=False,
+    ):
+        if self.trainer.global_step < self.warmup:
+            lr_scale = min(
+                1.0, float(self.trainer.global_step + 1) / self.warmup
+            )
+            for pg in optimizer.param_groups:
+                pg["lr"] = lr_scale * self.optimizer_kwargs["lr"]
+
+        # update params
+        optimizer.step(closure=optimizer_closure)

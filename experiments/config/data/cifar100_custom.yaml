@@ -1,4 +1,5 @@
-call: CIFAR100CustomDataModule
+name: CIFAR100CustomDataModule
+
 n_classes: 100
 batch_size: 256
 num_workers: 4

@@ -41,7 +41,8 @@ class RandomFeatureGaussianProcess(nn.Module):
         projection.bias.requires_grad_(False)
 
         # https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/linear.py#L96
-        nn.init.kaiming_normal_(projection.weight, a=math.sqrt(5))
+        # nn.init.normal_(projection.weight, mean=0, std=0.05)
+        nn.init.orthogonal_(projection.weight, gain=0.05)
         nn.init.uniform_(projection.bias, 0, 2 * math.pi)
 
         self.rff = nn.Sequential(
@@ -57,7 +58,7 @@ class RandomFeatureGaussianProcess(nn.Module):
         # Weights for RFF
         self.weight = nn.Linear(n_inducing, out_features, bias=False)
         # Should be normally distributed a priori
-        nn.init.kaiming_normal_(self.weight.weight, a=math.sqrt(5))
+        nn.init.normal_(self.weight.weight, mean=0, std=0.01)
 
         self.pipeline = nn.Sequential(self.rff, self.weight)
 
