@@ -2,6 +2,7 @@ from copy import deepcopy
 
 import hydra
 import pytorch_lightning as pl
+import wandb
 from hydra.utils import to_absolute_path
 from omegaconf import DictConfig, OmegaConf
 from pl_bolts.datamodules import ImagenetDataModule  # noqa F401
@@ -75,6 +76,7 @@ def main(cfg: DictConfig) -> None:
 
     summary(model, (1, 3, 224, 224))
 
+    wandb.require(experiment="service")
     wandb_logger = WandbLogger(
         project=f"sngp-{data_fn_name.replace('DataModule', '')}",
         config=cfg_backup,
