@@ -110,10 +110,11 @@ class SpectralNorm:
                     v = v.clone(memory_format=torch.contiguous_format)
 
         sigma = torch.dot(u, torch.mv(weight_mat, v))
-        if (self.norm_multiplier / sigma) < 1:
-            return (self.norm_multiplier / sigma) * weight
-        else:
-            return weight
+        weight = weight * torch.minimum(
+            torch.ones_like(sigma), self.norm_multiplier / sigma
+        )
+
+        return weight
 
     def remove(self, module: Module) -> None:
         with torch.no_grad():

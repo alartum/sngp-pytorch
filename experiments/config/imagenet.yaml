@@ -10,3 +10,7 @@ seed: 42
 
 optimizer:
   weight_decay: 1e-4
+  lr: 0.5
+
+trainer:
+  max_epochs: 605
