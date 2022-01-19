@@ -4,8 +4,19 @@ import torch.optim
 from torch import nn
 from torch.nn import CrossEntropyLoss, MSELoss
 
-from ..utils import mean_field_logits
 from .random_feature import Cos, RandomFeatureGaussianProcess
+
+
+def mean_field_logits(
+    logits: torch.Tensor,
+    variances: torch.Tensor,
+    mean_field_factor: float = 1.0,
+) -> torch.Tensor:
+    logits_scale = (1.0 + variances * mean_field_factor) ** 0.5
+    if len(logits.shape) > 1:
+        logits_scale = logits_scale[:, None]
+
+    return logits / logits_scale
 
 
 class LitRandomFeatureGaussianProcess(pl.LightningModule):

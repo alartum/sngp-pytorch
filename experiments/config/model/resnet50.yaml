@@ -1,8 +1,8 @@
 name: LitBackboneRFGP
 
-backbone_init: sngp_pytorch.backbones.resnet50()
+# backbone_init: sngp_pytorch.backbones.ResNet50(use_sn=False)
 # backbone_init: sngp_pytorch.backbones.ResNet(50, 10)
-# backbone_init: torchvision.models.resnet50()
+backbone_init: torchvision.models.resnet50()
 spectral_normalization: True
 norm_multiplier: 6.0
 

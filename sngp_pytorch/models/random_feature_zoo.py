@@ -8,8 +8,55 @@ from image_uncertainty.cifar.cifar_evaluate import load_model
 from image_uncertainty.models import get_model
 
 from ..backbones import resnet
-from ..utils import apply_spectral_norm, get_last_fc
 from .lit_random_feature import LitRandomFeatureGaussianProcess
+from .spectral_norm import spectral_norm
+
+
+def apply_spectral_norm(
+    module,
+    name: str = "model",
+    norm_multiplier: float = 1.0,
+    verbose: bool = False,
+):
+    to_replace = (
+        nn.Linear,
+        nn.Conv1d,
+        nn.Conv2d,
+        nn.Conv3d,
+        nn.ConvTranspose1d,
+        nn.ConvTranspose2d,
+        nn.ConvTranspose3d,
+    )
+    for child_name, child in module.named_children():
+        apply_spectral_norm(child, child_name, norm_multiplier, verbose)
+        child_ref = getattr(module, child_name)
+        if isinstance(child_ref, to_replace):
+            if verbose:
+                print(f"  {name}.{child_name} ({type(child_ref)})")
+            setattr(
+                module,
+                child_name,
+                spectral_norm(child_ref, norm_multiplier=norm_multiplier),
+            )
+
+
+def get_last_fc(module):
+    """Used to extract the last fully connected layer from the model.
+    It can then be replaced with an arbitrary module via 'getattr'
+    """
+    state = {}
+
+    def check_fc(module, state):
+        for child_name, child in module.named_children():
+            check_fc(child, state)
+            child_ref = getattr(module, child_name)
+            if isinstance(child_ref, nn.Linear):
+                state["parent"] = module
+                state["fc_name"] = child_name
+
+    check_fc(module, state)
+
+    return state["fc_name"], state["parent"]
 
 
 class LitBatchNorm1dRFGP(LitRandomFeatureGaussianProcess):
@@ -21,18 +68,18 @@ class LitBatchNorm1dRFGP(LitRandomFeatureGaussianProcess):
             n_classes=n_classes,
             backbone=backbone,
             save_hyperparameters=False,
-            **kwargs
+            **kwargs,
         )
 
 
 class LitBackboneRFGP(LitRandomFeatureGaussianProcess):
     def __init__(
         self,
-        backbone_init: str = "sngp_pytorch.backbones.resnet50()",
+        backbone_init: str = "torchvision.models.resnet50()",
         spectral_normalization: bool = True,
         norm_multiplier=6.0,
         n_classes: int = 10,
-        **kwargs
+        **kwargs,
     ):
         backbone = eval(backbone_init)
         if spectral_normalization:
@@ -47,7 +94,7 @@ class LitBackboneRFGP(LitRandomFeatureGaussianProcess):
             n_classes=n_classes,
             backbone=backbone,
             save_hyperparameters=False,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -59,7 +106,7 @@ class LitResnetRFGP(LitRandomFeatureGaussianProcess):
         n_classes: int = 10,
         input_planes: int = 3,
         n_channels: List[int] = [64, 128, 256, 512],
-        **kwargs
+        **kwargs,
     ):
         backbone_builder = getattr(resnet, model_name)
         backbone = backbone_builder(
@@ -76,7 +123,7 @@ class LitResnetRFGP(LitRandomFeatureGaussianProcess):
             n_classes=n_classes,
             backbone=backbone,
             save_hyperparameters=False,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -100,7 +147,7 @@ class LitPretrainedRFGP(LitRandomFeatureGaussianProcess):
             n_classes=n_classes,
             backbone=backbone,
             save_hyperparameters=False,
-            **kwargs
+            **kwargs,
         )
 
     def freeze_backbone(self, freeze=True):

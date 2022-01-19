@@ -12,6 +12,7 @@ from pytorch_lightning.callbacks import (
 )
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.plugins import DDPPlugin
+from torchinfo import summary
 
 from sngp_pytorch.datamodules import CIFAR100DataModule  # noqa F401
 from sngp_pytorch.models import LitBackboneRFGP, LitResnetRFGP  # noqa F401
@@ -71,6 +72,8 @@ def main(cfg: DictConfig) -> None:
         optimizer_cfg=cfg["optimizer"],
         lr_scheduler_cfg=cfg["lr_scheduler"],
     )
+
+    summary(model, (1, 3, 224, 224))
 
     wandb_logger = WandbLogger(
         project=f"sngp-{data_fn_name.replace('DataModule', '')}",
