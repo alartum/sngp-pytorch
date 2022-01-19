@@ -3,7 +3,7 @@ defaults:
   - data: imagenet
   - model: resnet50
   - optimizer: sgd
-  - lr_scheduler: sequential
+  - lr_scheduler: cosine_annealing
   - _self_  # https://hydra.cc/docs/upgrades/1.0_to_1.1/default_composition_order/
 
 seed: 42

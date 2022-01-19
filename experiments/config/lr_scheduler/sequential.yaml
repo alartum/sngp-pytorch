@@ -6,6 +6,5 @@ schedulers:
   - name: LinearLR
     start_factor: 0.01
     total_iters: 5
-  - name: CosineAnnealingWarmRestarts
-    T_0: 50
-    T_mult: 1
+  - name: CosineAnnealingLR
+    T_max: 50
