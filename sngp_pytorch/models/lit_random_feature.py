@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pytorch_lightning as pl
 import torch
 import torch.optim
@@ -67,12 +69,14 @@ class LitRandomFeatureGaussianProcess(pl.LightningModule):
             verbose=verbose,
         )
 
-        self.optimizer_name = optimizer_cfg.pop("name")
-        self.optimizer_kwargs = optimizer_cfg
-        self.lr_scheduler_name = lr_scheduler_cfg.pop("name")
+        optimizer_cfg_cpy = deepcopy(optimizer_cfg)
+        self.optimizer_name = optimizer_cfg_cpy.pop("name")
+        self.optimizer_kwargs = optimizer_cfg_cpy
 
-        self.lr_scheduler_config = lr_scheduler_cfg.pop("config", {})
-        self.lr_scheduler_kwargs = lr_scheduler_cfg
+        lr_scheduler_cfg_cpy = deepcopy(lr_scheduler_cfg)
+        self.lr_scheduler_name = lr_scheduler_cfg_cpy.pop("name")
+        self.lr_scheduler_config = lr_scheduler_cfg_cpy.pop("config", {})
+        self.lr_scheduler_kwargs = lr_scheduler_cfg_cpy
         self.l2_reg = l2_reg
         self.log_covariance = log_covariance
 
@@ -241,8 +245,9 @@ class LitRandomFeatureGaussianProcess(pl.LightningModule):
             **self.optimizer_kwargs,
         )
 
+        lr_scheduler_kwargs = deepcopy(self.lr_scheduler_kwargs)
         if self.lr_scheduler_name == "SequentialLR":
-            schedulers_cfg = self.lr_scheduler_kwargs.pop("schedulers")
+            schedulers_cfg = lr_scheduler_kwargs.pop("schedulers")
             schedulers = []
             for cfg in schedulers_cfg:
                 name = cfg.pop("name")
@@ -251,7 +256,7 @@ class LitRandomFeatureGaussianProcess(pl.LightningModule):
                 )
 
             lr_scheduler = torch.optim.lr_scheduler.SequentialLR(
-                optimizer, schedulers, **self.lr_scheduler_kwargs
+                optimizer, schedulers, **lr_scheduler_kwargs
             )
             # Optimizer is not saved by default
             lr_scheduler.optimizer = optimizer
