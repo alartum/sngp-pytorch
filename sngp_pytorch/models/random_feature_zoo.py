@@ -28,7 +28,7 @@ class LitBatchNorm1dRFGP(LitRandomFeatureGaussianProcess):
 class LitBackboneRFGP(LitRandomFeatureGaussianProcess):
     def __init__(
         self,
-        backbone_init: str = "sngp_pytorch.backbones.resnet.resnet50()",
+        backbone_init: str = "sngp_pytorch.backbones.resnet50()",
         spectral_normalization: bool = True,
         norm_multiplier=6.0,
         n_classes: int = 10,

@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import hydra
 import pytorch_lightning as pl
 from hydra.utils import to_absolute_path
@@ -18,6 +20,7 @@ from sngp_pytorch.models import LitBackboneRFGP, LitResnetRFGP  # noqa F401
 @hydra.main(config_path="config", config_name="cifar100.yaml")
 def main(cfg: DictConfig) -> None:
     cfg = OmegaConf.to_container(cfg)
+    cfg_backup = deepcopy(cfg)
 
     pl.seed_everything(cfg["seed"], workers=True)
 
@@ -60,6 +63,7 @@ def main(cfg: DictConfig) -> None:
 
     model_cfg = cfg["model"]
     model_name = model_cfg.pop("name")
+
     model_fn = globals()[model_name]
     model = model_fn(
         n_classes=n_classes,
@@ -70,12 +74,12 @@ def main(cfg: DictConfig) -> None:
 
     wandb_logger = WandbLogger(
         project=f"sngp-{data_fn_name.replace('DataModule', '')}",
-        config=cfg,
+        config=cfg_backup,
         log_model=True,
     )
     wandb_logger.watch(model)
 
-    print(OmegaConf.to_yaml(cfg))
+    print(OmegaConf.to_yaml(cfg_backup))
 
     trainer_cfg = cfg["trainer"]
     if trainer_cfg.get("strategy", None) == "ddp":

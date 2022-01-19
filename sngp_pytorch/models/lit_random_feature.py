@@ -24,7 +24,10 @@ class LitRandomFeatureGaussianProcess(pl.LightningModule):
             name="SGD", lr=1e-4, momentum=0.9, weight_decay=1e-4
         ),
         lr_scheduler_cfg=dict(
-            name="StepLR", warmup=500, step_size=30, gamma=0.1, verbose=True
+            name="StepLR",
+            step_size=30,
+            gamma=0.1,
+            verbose=True,
         ),
         log_covariance=False,
         save_hyperparameters=True,
@@ -56,8 +59,7 @@ class LitRandomFeatureGaussianProcess(pl.LightningModule):
         self.optimizer_name = optimizer_cfg.pop("name")
         self.optimizer_kwargs = optimizer_cfg
         self.lr_scheduler_name = lr_scheduler_cfg.pop("name")
-        # 500 warmup steps by default
-        self.warmup = lr_scheduler_cfg.pop("warmup", 500)
+
         self.lr_scheduler_config = lr_scheduler_cfg.pop("config", {})
         self.lr_scheduler_kwargs = lr_scheduler_cfg
         self.l2_reg = l2_reg
@@ -228,36 +230,26 @@ class LitRandomFeatureGaussianProcess(pl.LightningModule):
             **self.optimizer_kwargs,
         )
 
-        if self.warmup > 0:
-            for pg in optimizer.param_groups:
-                pg["lr"] = self.optimizer_kwargs["lr"] / self.warmup
+        if self.lr_scheduler_name == "SequentialLR":
+            schedulers_cfg = self.lr_scheduler_kwargs.pop("schedulers")
+            schedulers = []
+            for cfg in schedulers_cfg:
+                name = cfg.pop("name")
+                schedulers.append(
+                    getattr(torch.optim.lr_scheduler, name)(optimizer, **cfg)
+                )
 
-        lr_scheduler = getattr(
-            torch.optim.lr_scheduler, self.lr_scheduler_name
-        )(optimizer, **self.lr_scheduler_kwargs)
+            lr_scheduler = torch.optim.lr_scheduler.SequentialLR(
+                optimizer, schedulers, **self.lr_scheduler_kwargs
+            )
+            # Optimizer is not saved by default
+            lr_scheduler.optimizer = optimizer
+
+        else:
+            lr_scheduler = getattr(
+                torch.optim.lr_scheduler, self.lr_scheduler_name
+            )(optimizer, **self.lr_scheduler_kwargs)
 
         scheduler = {"scheduler": lr_scheduler, **self.lr_scheduler_config}
 
         return [optimizer], [scheduler]
-
-    # https://pytorch-lightning.readthedocs.io/en/stable/common/optimizers.html#step-optimizers-at-arbitrary-intervals
-    def optimizer_step(
-        self,
-        epoch,
-        batch_idx,
-        optimizer,
-        optimizer_idx,
-        optimizer_closure,
-        on_tpu=False,
-        using_native_amp=False,
-        using_lbfgs=False,
-    ):
-        if self.trainer.global_step < self.warmup:
-            lr_scale = min(
-                1.0, float(self.trainer.global_step + 1) / self.warmup
-            )
-            for pg in optimizer.param_groups:
-                pg["lr"] = lr_scale * self.optimizer_kwargs["lr"]
-
-        # update params
-        optimizer.step(closure=optimizer_closure)

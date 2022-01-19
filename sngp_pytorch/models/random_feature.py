@@ -24,6 +24,7 @@ class RandomFeatureGaussianProcess(nn.Module):
         momentum: float = 0.9,
         ridge_penalty: float = 1e-6,
         activation: nn.Module = Cos(),
+        rff_type: str = "orf",
         verbose: bool = False,
     ):
         super().__init__()
@@ -41,8 +42,12 @@ class RandomFeatureGaussianProcess(nn.Module):
         projection.bias.requires_grad_(False)
 
         # https://github.com/pytorch/pytorch/blob/master/torch/nn/modules/linear.py#L96
-        # nn.init.normal_(projection.weight, mean=0, std=0.05)
-        nn.init.orthogonal_(projection.weight, gain=0.05)
+        if rff_type == "rff":
+            nn.init.normal_(projection.weight, gain=0.05)
+        elif rff_type == "orf":
+            nn.init.orthogonal_(projection.weight, gain=0.05)
+        else:
+            raise ValueError(f"Unsupported `rff_type`: {rff_type}")
         nn.init.uniform_(projection.bias, 0, 2 * math.pi)
 
         self.rff = nn.Sequential(
@@ -58,7 +63,7 @@ class RandomFeatureGaussianProcess(nn.Module):
         # Weights for RFF
         self.weight = nn.Linear(n_inducing, out_features, bias=False)
         # Should be normally distributed a priori
-        nn.init.normal_(self.weight.weight, mean=0, std=0.01)
+        nn.init.xavier_normal_(self.weight.weight, gain=math.sqrt(5))
 
         self.pipeline = nn.Sequential(self.rff, self.weight)
 

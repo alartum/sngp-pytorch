@@ -1,13 +1,13 @@
 defaults:
   - trainer: gpu
   - data: cifar100
-  - model: wide_resnet28_10
+  - model: resnet50
   - optimizer: sgd
-  - lr_scheduler: multi_step
+  - lr_scheduler: sequential
   - _self_  # https://hydra.cc/docs/upgrades/1.0_to_1.1/default_composition_order/
 
 seed: 42
 
 # Overrides
 optimizer:
-  weight_decay: 5e-4
+  weight_decay: 3e-4

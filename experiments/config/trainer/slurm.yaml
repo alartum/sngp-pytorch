@@ -1,7 +1,7 @@
 gpus: 1
-num_nodes: 4
+num_nodes: 2
 
-max_epochs: 200
+max_epochs: 205
 check_val_every_n_epoch: 1
 auto_scale_batch_size: power
 precision: 16

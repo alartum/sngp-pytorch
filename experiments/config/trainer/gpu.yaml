@@ -1,4 +1,4 @@
-max_epochs: 200
+max_epochs: 205
 check_val_every_n_epoch: 1
 gpus: 1
 auto_scale_batch_size: power

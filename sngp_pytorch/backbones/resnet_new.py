@@ -1,6 +1,6 @@
 """https://github.com/meliketoy/wide-resnet.pytorch/blob/master/networks/resnet.py
 """
-
+import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -22,7 +22,7 @@ def conv3x3(in_planes, out_planes, stride=1):
 def conv_init(m):
     classname = m.__class__.__name__
     if classname.find("Conv") != -1:
-        init.xavier_uniform(m.weight, gain=2 ** 0.5)
+        init.xavier_uniform(m.weight, gain=np.sqrt(2))
         init.constant(m.bias, 0)
 
 

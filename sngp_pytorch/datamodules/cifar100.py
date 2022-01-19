@@ -105,6 +105,20 @@ class CIFAR100DataModule(VisionDataModule):
             **kwargs,
         )
 
+        self.train_transforms = transform_lib.Compose(
+            [
+                transform_lib.RandomHorizontalFlip(),
+                transform_lib.ToTensor(),
+                cifar10_normalization(),
+            ]
+        )
+        self.val_transforms = transform_lib.Compose(
+            [transform_lib.ToTensor(), cifar10_normalization()]
+        )
+        self.test_transforms = transform_lib.Compose(
+            [transform_lib.ToTensor(), cifar10_normalization()]
+        )
+
     @property
     def num_samples(self) -> int:
         train_len, _ = self._get_splits(len_dataset=50_000)
@@ -119,11 +133,11 @@ class CIFAR100DataModule(VisionDataModule):
         return 100
 
     def default_transforms(self) -> Callable:
+        transforms_list = [
+            transform_lib.RandomHorizontalFlip(),
+            transform_lib.ToTensor(),
+        ]
         if self.normalize:
-            cf10_transforms = transform_lib.Compose(
-                [transform_lib.ToTensor(), cifar10_normalization()]
-            )
-        else:
-            cf10_transforms = transform_lib.Compose([transform_lib.ToTensor()])
+            transforms_list.append(cifar10_normalization())
 
-        return cf10_transforms
+        return transform_lib.Compose(transforms_list)

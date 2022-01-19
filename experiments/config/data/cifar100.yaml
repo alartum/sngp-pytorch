@@ -2,7 +2,7 @@ name: CIFAR100DataModule
 
 n_classes: 100
 batch_size: 128
-num_workers: 4
+num_workers: 6
 
 normalize: True
 pin_memory: True
